@@ -15,6 +15,7 @@ contract CrowdFunding {
     error CrowdFunding__allMileStonesReached(uint256);
     error CrowdFunding__notEnoughFundsToReleaseForThisMilestone(uint256);
     error CrowdFunding__fundGeneratedGreaterThanTargetAmount(uint256);
+    error CrowdFunding__thisFunderHasntFundedTheCampagin(address);
 
     uint256 public immutable i_MinimumAmount;
     address[] public s_Funders;
@@ -62,7 +63,8 @@ contract CrowdFunding {
             revert CrowdFunding__amountNotEnough();
         }
 
-        if (getBalance() + msg.value > i_TargetAmount) {
+        if (getBalance() > i_TargetAmount) {
+            payable(msg.sender).transfer(msg.value);
             revert CrowdFunding__fundGeneratedGreaterThanTargetAmount(
                 i_TargetAmount - getBalance()
             );
@@ -93,16 +95,51 @@ contract CrowdFunding {
         s_CurrentMilestone += 1;
     }
 
+    function getFundsByAddress(address funder) external view returns (uint256) {
+        if (s_FundersMap[funder] == false) {
+            revert CrowdFunding__thisFunderHasntFundedTheCampagin(funder);
+        }
+        return s_FundersFund[funder];
+    }
+
     function getBalance() public view returns (uint256) {
         return address(this).balance;
     }
 
     function getNumberOfFunders() public view returns (uint256) {
-        return s_Funders.length();
+        return s_Funders.length;
     }
 
     function isDeadlinePassed() public view returns (bool) {
         return (block.timestamp - s_lastBlockTimeStamp) > i_Duration;
+    }
+
+    function differenceBetweenBlocks() public view returns (uint256) {
+        return block.timestamp - s_lastBlockTimeStamp;
+    }
+
+    function getMinimumAmount() public view returns (uint256) {
+        return i_MinimumAmount;
+    }
+
+    function getMilestoneAmount(uint256 index) public view returns (uint256) {
+        return s_MilestoneFunds[index];
+    }
+
+    function getNumberOfMilestones() public view returns (uint256) {
+        return i_NumberOfMilestones;
+    }
+
+    function getDuration() public view returns (uint256) {
+        return i_Duration;
+    }
+
+    function getTargetAmount() public view returns (uint256) {
+        return i_TargetAmount;
+    }
+
+    function getCurrentMilestone() public view returns (uint256) {
+        return s_CurrentMilestone;
     }
 
     modifier onlyOwner() {

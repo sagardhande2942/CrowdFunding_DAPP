@@ -13,16 +13,19 @@ contract CFContractFactory {
         uint256[] memory milestoneFunds,
         uint256 duration,
         uint256 targetAmount
-    ) public external returns(CrowdFunding){
+    ) external {
         CrowdFunding myCampaign = new CrowdFunding({
-            minimumAmount: minimumamount,
-            numberofmilestones: numberofmilestones,
-            milestoneFunds: milestoneFunds,
+            minimumAmount: minimumAmount,
+            numberofmilestones: numberOfMilestones,
+            milestonefunds: milestoneFunds,
             duration: duration,
-            targetAmount: targetAmount
+            targetamount: targetAmount
         });
 
         s_CampaignAddresses.push(myCampaign);
-        return myCampaign;
+    }
+
+    function getTheLatestCampaign() external view returns (CrowdFunding) {
+        return s_CampaignAddresses[s_CampaignAddresses.length - 1];
     }
 }
