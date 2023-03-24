@@ -17,26 +17,31 @@ contract CrowdFunding {
     error CrowdFunding__fundGeneratedGreaterThanTargetAmount(uint256);
     error CrowdFunding__thisFunderHasntFundedTheCampagin(address);
 
-    uint256 public immutable i_MinimumAmount;
-    address[] public s_Funders;
+    // uint256 public immutable i_MinimumAmount;
+    // address[] public s_Funders;
     uint256[] public s_MilestoneFunds;
-    mapping(address => bool) s_FundersMap;
-    mapping(address => uint256) s_FundersFund;
+    uint256[] s_MilestoneDeadlines;
+    // mapping(address => bool) s_FundersMap;
+    // mapping(address => uint256) s_FundersFund;
     uint256 public s_lastBlockTimeStamp;
     uint256 public immutable i_Duration;
     uint256 public immutable i_NumberOfMilestones;
     uint256 public s_CurrentMilestone;
     address public immutable i_owner;
     uint256 public immutable i_TargetAmount;
+    address public immutable i_auctionAdress;
+    address public immutable campaignAddress = address(this);
 
     constructor(
-        uint256 minimumAmount,
+        // uint256 minimumAmount,
         uint256 numberofmilestones,
         uint256[] memory milestonefunds,
         uint256 duration,
-        uint256 targetamount
+        uint256 targetamount,
+        uint256[] memory milestoneDeadlines,
+        address auctionAdress
     ) {
-        i_MinimumAmount = minimumAmount;
+        // i_MinimumAmount = minimumAmount;
         s_MilestoneFunds = milestonefunds;
         s_lastBlockTimeStamp = block.timestamp;
         i_Duration = duration;
@@ -44,40 +49,42 @@ contract CrowdFunding {
         i_NumberOfMilestones = numberofmilestones;
         i_owner = msg.sender;
         i_TargetAmount = targetamount;
+        s_MilestoneDeadlines = milestoneDeadlines;
+        i_auctionAdress = auctionAdress;
     }
 
-    receive() external payable {
-        fund();
-    }
+    // receive() external payable {
+    //     fund();
+    // }
 
-    fallback() external payable {
-        revert CrowdFunding__youHaveReachedFallback(msg.sender, msg.value);
-    }
+    // fallback() external payable {
+    //     revert CrowdFunding__youHaveReachedFallback(msg.sender, msg.value);
+    // }
 
-    function fund() public payable {
-        if (isDeadlinePassed() == true) {
-            revert CrowdFunding__thisCampaignIsPastDeadline();
-        }
+    // function fund() public payable {
+    //     if (isDeadlinePassed() == true) {
+    //         revert CrowdFunding__thisCampaignIsPastDeadline();
+    //     }
 
-        if (msg.value < i_MinimumAmount) {
-            revert CrowdFunding__amountNotEnough();
-        }
+    //     if (msg.value < i_MinimumAmount) {
+    //         revert CrowdFunding__amountNotEnough();
+    //     }
 
-        if (getBalance() > i_TargetAmount) {
-            payable(msg.sender).transfer(msg.value);
-            revert CrowdFunding__fundGeneratedGreaterThanTargetAmount(
-                i_TargetAmount - getBalance()
-            );
-        }
+    //     if (getBalance() > i_TargetAmount) {
+    //         payable(msg.sender).transfer(msg.value);
+    //         revert CrowdFunding__fundGeneratedGreaterThanTargetAmount(
+    //             i_TargetAmount - getBalance()
+    //         );
+    //     }
 
-        if (s_FundersMap[msg.sender] == true) {
-            s_FundersFund[msg.sender] += msg.value;
-        } else {
-            s_Funders.push(msg.sender);
-            s_FundersMap[msg.sender] = true;
-            s_FundersFund[msg.sender] = msg.value;
-        }
-    }
+    //     if (s_FundersMap[msg.sender] == true) {
+    //         s_FundersFund[msg.sender] += msg.value;
+    //     } else {
+    //         s_Funders.push(msg.sender);
+    //         s_FundersMap[msg.sender] = true;
+    //         s_FundersFund[msg.sender] = msg.value;
+    //     }
+    // }
 
     function fundRelease() external payable onlyOwner {
         if (s_CurrentMilestone >= i_NumberOfMilestones) {
@@ -95,32 +102,32 @@ contract CrowdFunding {
         s_CurrentMilestone += 1;
     }
 
-    function getFundsByAddress(address funder) external view returns (uint256) {
-        if (s_FundersMap[funder] == false) {
-            revert CrowdFunding__thisFunderHasntFundedTheCampagin(funder);
-        }
-        return s_FundersFund[funder];
-    }
+    // function getFundsByAddress(address funder) external view returns (uint256) {
+    //     if (s_FundersMap[funder] == false) {
+    //         revert CrowdFunding__thisFunderHasntFundedTheCampagin(funder);
+    //     }
+    //     return s_FundersFund[funder];
+    // }
 
     function getBalance() public view returns (uint256) {
         return address(this).balance;
     }
 
-    function getNumberOfFunders() public view returns (uint256) {
-        return s_Funders.length;
-    }
+    // function getNumberOfFunders() public view returns (uint256) {
+    //     return s_Funders.length;
+    // }
 
     function isDeadlinePassed() public view returns (bool) {
         return (block.timestamp - s_lastBlockTimeStamp) > i_Duration;
     }
 
-    function differenceBetweenBlocks() public view returns (uint256) {
-        return block.timestamp - s_lastBlockTimeStamp;
+    function differenceBetweenBlocks(uint256 timestamp) public view returns (uint256) {
+        return block.timestamp - timestamp;
     }
 
-    function getMinimumAmount() public view returns (uint256) {
-        return i_MinimumAmount;
-    }
+    // function getMinimumAmount() public view returns (uint256) {
+    //     return i_MinimumAmount;
+    // }
 
     function getMilestoneAmount(uint256 index) public view returns (uint256) {
         return s_MilestoneFunds[index];
